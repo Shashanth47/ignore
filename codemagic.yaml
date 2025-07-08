@@ -15,10 +15,12 @@ workflows:
       - name: Build web app
         script: |
           npm run build
-      - name: Update dependencies and copy web assets to native project
+      - name: Add Android platform (if not exists)
         script: |
-          npx cap copy android
-          npx cap update android
+          npx cap add android || echo "Android platform already exists"
+      - name: Sync web assets to native project
+        script: |
+          npx cap sync android
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
