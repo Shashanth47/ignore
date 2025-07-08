@@ -18,9 +18,30 @@ workflows:
       - name: Add Android platform (if not exists)
         script: |
           npx cap add android || echo "Android platform already exists"
+      - name: Debug Capacitor setup
+        script: |
+          echo "=== Capacitor Debug Info ==="
+          echo "Current directory: $(pwd)"
+          echo "Capacitor config:"
+          cat capacitor.config.ts
+          echo "\n=== Checking directories ==="
+          ls -la
+          echo "\n=== Checking dist directory ==="
+          ls -la dist/ || echo "dist directory not found"
+          echo "\n=== Checking android directory ==="
+          ls -la android/ || echo "android directory not found"
+          echo "\n=== Capacitor CLI version ==="
+          npx cap --version
+          echo "\n=== Available platforms ==="
+          npx cap ls
       - name: Sync web assets to native project
         script: |
-          npx cap sync android
+          echo "Starting Capacitor sync..."
+          npx cap sync android --verbose || {
+            echo "Sync failed, trying alternative approach..."
+            npx cap copy android --verbose
+            npx cap update android --verbose
+          }
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
