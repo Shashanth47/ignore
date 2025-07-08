@@ -42,10 +42,10 @@ workflows:
       - name: Sync web assets to native project
         script: |
           echo "Starting Capacitor sync..."
-          npx cap sync android --verbose || {
+          npx cap sync android || {
             echo "Sync failed, trying alternative approach..."
-            npx cap copy android --verbose
-            npx cap update android --verbose
+            npx cap copy android
+            npx cap update android
           }
       - name: Set up local.properties
         script: |
