@@ -24,16 +24,21 @@ workflows:
           echo "Current directory: $(pwd)"
           echo "Capacitor config:"
           cat capacitor.config.ts
-          echo "\n=== Checking directories ==="
+          echo ""
+          echo "=== Checking directories ==="
           ls -la
-          echo "\n=== Checking dist directory ==="
+          echo ""
+          echo "=== Checking dist directory ==="
           ls -la dist/ || echo "dist directory not found"
-          echo "\n=== Checking android directory ==="
+          echo ""
+          echo "=== Checking android directory ==="
           ls -la android/ || echo "android directory not found"
-          echo "\n=== Capacitor CLI version ==="
+          echo ""
+          echo "=== Capacitor CLI version ==="
           npx cap --version
-          echo "\n=== Available platforms ==="
-          npx cap ls
+          echo ""
+          echo "=== Available platforms ==="
+          npx cap ls || echo "cap ls failed"
       - name: Sync web assets to native project
         script: |
           echo "Starting Capacitor sync..."
