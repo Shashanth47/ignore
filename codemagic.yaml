@@ -4,13 +4,8 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
-      android_signing:
-        - keystore_reference
-      groups:
-        - google_play
       vars:
         PACKAGE_NAME: "com.tibzee.app"
-        GOOGLE_PLAY_TRACK: "internal"
       node: v18.17.0
       java: '11'
     scripts:
@@ -27,18 +22,17 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
-      - name: Build Android APK
+      - name: Build Android APK (Debug)
         script: |
           cd android
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug
     artifacts:
       - android/app/build/outputs/**/*.apk
       - android/app/build/outputs/**/mapping.txt
-      - android/app/build/outputs/**/*.aab
     publishing:
       email:
         recipients:
-          - kushashanth@gmail.com
+          - user@example.com
         notify:
           success: true
           failure: true
