@@ -9,6 +9,7 @@ interface CreatePostProps {
 const CreatePost: React.FC<CreatePostProps> = ({ onClose, onSubmit }) => {
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
 
@@ -33,6 +34,25 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onSubmit }) => {
 
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setImages(prev => [...prev, result]);
+        setImageFiles(prev => [...prev, file]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    setImages(images.filter((_, index) => index !== indexToRemove));
+    setImageFiles(imageFiles.filter((_, index) => index !== indexToRemove));
   };
 
   return (
@@ -64,13 +84,17 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onSubmit }) => {
 
           {/* Media Upload */}
           <div className="space-y-3">
-            <button
-              type="button"
-              className="flex items-center space-x-2 px-4 py-3 bg-lavender-400 text-white rounded-2xl hover:bg-lavender-500 transition-all duration-200"
-            >
+            <label className="flex items-center space-x-2 px-4 py-3 bg-lavender-400 text-white rounded-2xl hover:bg-lavender-500 transition-all duration-200 cursor-pointer">
               <Camera size={18} />
               <span>Add Photos</span>
-            </button>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
             
             {images.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
@@ -79,7 +103,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onSubmit }) => {
                     <img src={image} alt={`Upload ${index + 1}`} className="w-full h-24 object-cover rounded-xl" />
                     <button
                       type="button"
-                      onClick={() => setImages(images.filter((_, i) => i !== index))}
+                      onClick={() => removeImage(index)}
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
                     >
                       <X size={12} />

@@ -4,7 +4,7 @@ class SocketService {
   private socket: Socket | null = null;
   private isConnected = false;
 
-  connect(userType: 'teacher' | 'parent', userId: string) {
+  connect(userType: 'teacher' | 'parent', userId: string, classId?: string) {
     if (this.socket) {
       this.disconnect();
     }
@@ -13,7 +13,8 @@ class SocketService {
     this.socket = io('ws://localhost:3001', {
       query: {
         userType,
-        userId
+        userId,
+        classId
       }
     });
 

@@ -6,16 +6,21 @@ import Profile from './components/Profile';
 import Navigation from './components/Navigation';
 import CreatePost from './components/CreatePost';
 import { socketService } from '../services/socket';
+import Points from './components/Points';
+import { useAuth } from '../contexts/AuthContext';
 import toast, { Toaster } from 'react-hot-toast';
 
 function TeacherApp() {
+  const { user, userData } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showDM, setShowDM] = useState(false);
 
   useEffect(() => {
-    // Connect to socket as teacher
-    socketService.connect('teacher', 'teacher-1');
+    if (user) {
+      // Connect to socket as teacher
+      socketService.connect('teacher', user.uid);
+    }
 
     return () => {
       socketService.disconnect();
@@ -66,8 +71,16 @@ function TeacherApp() {
     setShowCreatePost(false);
   };
 
+  const handleCreateTransaction = (transaction: any) => {
+    console.log('New transaction:', transaction);
+    // Emit to socket for real-time updates
+    socketService.emit('new_transaction', transaction);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
+      case 'points':
+        return <Points createTransaction={handleCreateTransaction} />;
       case 'home':
         return (
           <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -75,21 +88,21 @@ function TeacherApp() {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
-                  Hello Ms. Shreya Kapoor <span className="text-2xl">👋</span>
+                  Hello {userData?.teacherName || 'Teacher'} <span className="text-2xl">👋</span>
                 </h1>
               </div>
-              <button 
+              <button
                 onClick={() => setActiveTab('profile')}
-                className="w-12 h-12 bg-gradient-to-r from-lavender-400 to-lavender-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
-                <span className="text-white font-bold text-lg">S</span>
+                <span className="text-white font-bold text-lg">P</span>
               </button>
             </div>
 
             {/* Chat with Parents Card */}
             <button 
               onClick={handleChatWithParents}
-              className="w-full bg-gradient-to-r from-lavender-100 to-lavender-200 rounded-3xl p-6 shadow-lg border border-lavender-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:from-lavender-200 hover:to-lavender-300 group"
+              className="w-full bg-lavender-100 rounded-3xl p-6 shadow-lg border border-lavender-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:bg-lavender-200 group"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -103,7 +116,6 @@ function TeacherApp() {
               <div className="text-center mt-4">
                 <h3 className="text-lg font-semibold text-slate-700 group-hover:text-slate-800 transition-colors duration-300">Chat with Parents</h3>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-lavender-200/20 to-transparent rounded-3xl group-hover:from-lavender-300/30 transition-all duration-300"></div>
             </button>
 
             {/* Two column cards */}
@@ -111,7 +123,7 @@ function TeacherApp() {
               {/* Create Games Card */}
               <button 
                 onClick={() => handleComingSoon('Create Games')}
-                className="w-full bg-gradient-to-br from-mustard-100 to-mustard-200 rounded-3xl p-6 shadow-lg border border-mustard-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:from-mustard-200 hover:to-mustard-300 group"
+                className="w-full bg-mustard-100 rounded-3xl p-6 shadow-lg border border-mustard-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:bg-mustard-200 group"
               >
                 <div className="flex items-center justify-center mb-4">
                   <img 
@@ -121,13 +133,12 @@ function TeacherApp() {
                   />
                 </div>
                 <h3 className="text-center text-lg font-semibold text-slate-700 group-hover:text-slate-800 transition-colors duration-300">Create Games</h3>
-                <div className="absolute inset-0 bg-gradient-to-t from-mustard-200/20 to-transparent rounded-3xl group-hover:from-mustard-300/30 transition-all duration-300"></div>
               </button>
 
               {/* Create Worksheets Card */}
               <button 
                 onClick={() => handleComingSoon('Create Worksheets')}
-                className="w-full bg-gradient-to-br from-mint-100 to-mint-200 rounded-3xl p-6 shadow-lg border border-mint-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:from-mint-200 hover:to-mint-300 group"
+                className="w-full bg-mint-100 rounded-3xl p-6 shadow-lg border border-mint-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:bg-mint-200 group"
               >
                 <div className="flex items-center justify-center mb-4">
                   <img 
@@ -137,14 +148,13 @@ function TeacherApp() {
                   />
                 </div>
                 <h3 className="text-center text-lg font-semibold text-slate-700 group-hover:text-slate-800 transition-colors duration-300">Create Worksheets</h3>
-                <div className="absolute inset-0 bg-gradient-to-t from-mint-200/20 to-transparent rounded-3xl group-hover:from-mint-300/30 transition-all duration-300"></div>
               </button>
             </div>
 
             {/* View Insights Card */}
             <button 
               onClick={() => handleComingSoon('View Insights')}
-              className="w-full bg-gradient-to-r from-peach-100 to-peach-200 rounded-3xl p-6 shadow-lg border border-peach-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:from-peach-200 hover:to-peach-300 group"
+              className="w-full bg-peach-100 rounded-3xl p-6 shadow-lg border border-peach-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:bg-peach-200 group"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -158,7 +168,6 @@ function TeacherApp() {
               <div className="text-center mt-4">
                 <h3 className="text-lg font-semibold text-slate-700 group-hover:text-slate-800 transition-colors duration-300">View Insights</h3>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-peach-200/20 to-transparent rounded-3xl group-hover:from-peach-300/30 transition-all duration-300"></div>
             </button>
           </div>
         );
@@ -173,21 +182,21 @@ function TeacherApp() {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
-                  Hello Ms. Shreya Kapoor <span className="text-2xl">👋</span>
+                  Hello {userData?.teacherName || 'Teacher'} <span className="text-2xl">👋</span>
                 </h1>
               </div>
               <button 
                 onClick={() => setActiveTab('profile')}
-                className="w-12 h-12 bg-gradient-to-r from-lavender-400 to-lavender-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
-                <span className="text-white font-bold text-lg">S</span>
+                <span className="text-white font-bold text-lg">P</span>
               </button>
             </div>
 
             {/* Chat with Parents Card */}
             <button 
               onClick={handleChatWithParents}
-              className="w-full bg-gradient-to-r from-lavender-100 to-lavender-200 rounded-3xl p-6 shadow-lg border border-lavender-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:from-lavender-200 hover:to-lavender-300 group"
+              className="w-full bg-lavender-100 rounded-3xl p-6 shadow-lg border border-lavender-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:bg-lavender-200 group"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -201,7 +210,6 @@ function TeacherApp() {
               <div className="text-center mt-4">
                 <h3 className="text-lg font-semibold text-slate-700 group-hover:text-slate-800 transition-colors duration-300">Chat with Parents</h3>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-lavender-200/20 to-transparent rounded-3xl group-hover:from-lavender-300/30 transition-all duration-300"></div>
             </button>
 
             {/* Two column cards */}
@@ -209,7 +217,7 @@ function TeacherApp() {
               {/* Create Games Card */}
               <button 
                 onClick={() => handleComingSoon('Create Games')}
-                className="w-full bg-gradient-to-br from-mustard-100 to-mustard-200 rounded-3xl p-6 shadow-lg border border-mustard-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:from-mustard-200 hover:to-mustard-300 group"
+                className="w-full bg-mustard-100 rounded-3xl p-6 shadow-lg border border-mustard-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:bg-mustard-200 group"
               >
                 <div className="flex items-center justify-center mb-4">
                   <img 
@@ -219,13 +227,12 @@ function TeacherApp() {
                   />
                 </div>
                 <h3 className="text-center text-lg font-semibold text-slate-700 group-hover:text-slate-800 transition-colors duration-300">Create Games</h3>
-                <div className="absolute inset-0 bg-gradient-to-t from-mustard-200/20 to-transparent rounded-3xl group-hover:from-mustard-300/30 transition-all duration-300"></div>
               </button>
 
               {/* Create Worksheets Card */}
               <button 
                 onClick={() => handleComingSoon('Create Worksheets')}
-                className="w-full bg-gradient-to-br from-mint-100 to-mint-200 rounded-3xl p-6 shadow-lg border border-mint-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:from-mint-200 hover:to-mint-300 group"
+                className="w-full bg-mint-100 rounded-3xl p-6 shadow-lg border border-mint-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:bg-mint-200 group"
               >
                 <div className="flex items-center justify-center mb-4">
                   <img 
@@ -235,14 +242,13 @@ function TeacherApp() {
                   />
                 </div>
                 <h3 className="text-center text-lg font-semibold text-slate-700 group-hover:text-slate-800 transition-colors duration-300">Create Worksheets</h3>
-                <div className="absolute inset-0 bg-gradient-to-t from-mint-200/20 to-transparent rounded-3xl group-hover:from-mint-300/30 transition-all duration-300"></div>
               </button>
             </div>
 
             {/* View Insights Card */}
             <button 
               onClick={() => handleComingSoon('View Insights')}
-              className="w-full bg-gradient-to-r from-peach-100 to-peach-200 rounded-3xl p-6 shadow-lg border border-peach-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:from-peach-200 hover:to-peach-300 group"
+              className="w-full bg-peach-100 rounded-3xl p-6 shadow-lg border border-peach-200 overflow-hidden relative hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:bg-peach-200 group"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -256,7 +262,6 @@ function TeacherApp() {
               <div className="text-center mt-4">
                 <h3 className="text-lg font-semibold text-slate-700 group-hover:text-slate-800 transition-colors duration-300">View Insights</h3>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-peach-200/20 to-transparent rounded-3xl group-hover:from-peach-300/30 transition-all duration-300"></div>
             </button>
           </div>
         );

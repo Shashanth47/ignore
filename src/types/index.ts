@@ -3,6 +3,7 @@ export interface Student {
   name: string;
   avatar: string;
   parentIds: string[];
+  points: number;
 }
 
 export interface Parent {
@@ -11,6 +12,21 @@ export interface Parent {
   avatar: string;
   email: string;
   studentIds: string[];
+  classCode: string;
+  kidsName: string;
+}
+
+export interface Teacher {
+  id: string;
+  email: string;
+  classId: string;
+  parents: Parent[];
+}
+
+export interface AuthUser {
+  uid: string;
+  email: string;
+  userType: 'parent' | 'teacher';
 }
 
 export interface Post {
@@ -46,4 +62,15 @@ export interface Conversation {
   participants: string[];
   lastMessage: Message;
   unreadCount: number;
+}
+
+export interface PointsTransaction {
+  id: string;
+  studentId: string;
+  studentName: string;
+  points: number;
+  reason: string;
+  timestamp: Date;
+  teacherId: string;
+  teacherName: string;
 }

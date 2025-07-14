@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Search, Send, User, FileText, Bell, MessageSquare, Award, MessageCircle, Heart, Reply, Trash2, MoreHorizontal } from 'lucide-react';
 import Feed from './Feed';
 import { socketService } from '../../services/socket';
+import { useAuth } from '../../contexts/AuthContext';
+import { getTeacherInfoForParent } from '../../firebase/classService';
+import { Teacher } from '../../types';
 
 interface MessagesProps {
   onClose: () => void;
@@ -10,37 +13,26 @@ interface MessagesProps {
 }
 
 const Messages: React.FC<MessagesProps> = ({ onClose, showDM, onCloseDM }) => {
+  const { userData, user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      content: "Emma showed wonderful curiosity during our volcano experiment today! 🌋",
-      type: 'achievement',
-      sender: 'teacher',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      reactions: [],
-      replies: []
-    },
-    {
-      id: '2',
-      content: "Thank you for sharing! Emma loved telling us about it at dinner.",
-      type: 'general',
-      sender: 'parent',
-      timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000),
-      reactions: [],
-      replies: []
-    },
-    {
-      id: '3',
-      content: "Emma had a great day! She participated well in circle time and enjoyed the art activity.",
-      type: 'report',
-      sender: 'teacher',
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      reactions: [],
-      replies: []
-    }
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [teacherInfo, setTeacherInfo] = useState<Teacher | null>(null);
+
+  useEffect(() => {
+    const fetchTeacherInfo = async () => {
+      if (!user?.uid) return;
+      
+      try {
+        const teacher = await getTeacherInfoForParent(user.uid);
+        setTeacherInfo(teacher);
+      } catch (error) {
+        console.error('Error fetching teacher info:', error);
+      }
+    };
+
+    fetchTeacherInfo();
+  }, [user?.uid]);
 
   useEffect(() => {
     // Listen for real-time messages
@@ -162,7 +154,7 @@ const Messages: React.FC<MessagesProps> = ({ onClose, showDM, onCloseDM }) => {
             <div className="mb-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-coral-500">
-                  Chat with Ms. Sarah
+                  Chat with {teacherInfo?.teacherName || 'Teacher'}
                 </h2>
                 <button 
                   onClick={onCloseDM}
@@ -179,9 +171,9 @@ const Messages: React.FC<MessagesProps> = ({ onClose, showDM, onCloseDM }) => {
                   <span className="text-white">👤</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800">Ms. Sarah Johnson</h3>
+                  <h3 className="font-semibold text-gray-800">{teacherInfo?.teacherName || 'Your Teacher'}</h3>
                   <p className="text-sm text-gray-500">
-                    Emma's Teacher • Room 3
+                    {userData?.kidsName}'s Teacher
                   </p>
                 </div>
               </div>

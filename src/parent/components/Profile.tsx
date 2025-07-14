@@ -1,7 +1,28 @@
-import React from 'react';
-import { Settings, Bell, HelpCircle, LogOut, User, Mail, Phone, Calendar, Download, Share2, Edit3, Shield, Baby } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, Bell, HelpCircle, LogOut, User, Mail, Phone, Calendar, Download, Share2, Edit3, Shield, Baby, X } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { getTeacherInfoForParent } from '../../firebase/classService';
+import { Teacher } from '../../types';
 
 const Profile: React.FC = () => {
+  const { userData, user } = useAuth();
+  const [showSettingsOverlay, setShowSettingsOverlay] = useState(false);
+  const [teacherInfo, setTeacherInfo] = useState<Teacher | null>(null);
+
+  useEffect(() => {
+    const fetchTeacherInfo = async () => {
+      if (!user?.uid) return;
+      
+      try {
+        const teacher = await getTeacherInfoForParent(user.uid);
+        setTeacherInfo(teacher);
+      } catch (error) {
+        console.error('Error fetching teacher info:', error);
+      }
+    };
+
+    fetchTeacherInfo();
+  }, [user?.uid]);
   const handleNotifications = () => {
     alert('Opening notification settings...');
   };
@@ -25,7 +46,7 @@ const Profile: React.FC = () => {
   };
 
   const handleDownloadReport = () => {
-    alert('Downloading Emma\'s progress report...');
+    alert(`Downloading ${userData?.kidsName || 'your child'}\'s progress report...`);
   };
 
   const handleShareProfile = () => {
@@ -37,7 +58,7 @@ const Profile: React.FC = () => {
   };
 
   const handleChildProgress = () => {
-    alert('Opening Emma\'s progress tracker...');
+    alert(`Opening ${userData?.kidsName || 'your child'}\'s progress tracker...`);
   };
 
   return (
@@ -50,9 +71,9 @@ const Profile: React.FC = () => {
               <span className="text-white text-4xl">👤</span>
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-slate-700 mb-2">Sarah & Mike Johnson</h1>
-              <p className="text-slate-600 mb-1">Emma's Parents</p>
-              <p className="text-slate-500 text-sm">Rainbow Preschool • Room 3</p>
+              <h1 className="text-3xl font-bold text-slate-700 mb-2">{userData?.parentName || 'Parent'}</h1>
+              <p className="text-slate-600 mb-1">{userData?.kidsName ? `${userData.kidsName}'s Parent` : 'Parent'}</p>
+              <p className="text-slate-500 text-sm">Little Harvard • Class {userData?.classCode || 'N/A'}</p>
             </div>
             <div className="flex space-x-2">
               <button 
@@ -73,15 +94,15 @@ const Profile: React.FC = () => {
 
         {/* Child Information */}
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-lavender-100">
-          <h2 className="text-xl font-bold text-slate-700 mb-4">Emma's Information</h2>
+          <h2 className="text-xl font-bold text-slate-700 mb-4">{userData?.kidsName || 'Child'}'s Information</h2>
           <div className="flex items-center space-x-4 mb-4">
             <div className="w-16 h-16 bg-peach-400 rounded-full flex items-center justify-center shadow-md">
               <span className="text-white text-2xl">👧</span>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-700">Emma Johnson</h3>
-              <p className="text-slate-500">Age 4 • Room 3</p>
-              <p className="text-slate-500 text-sm">Teacher: Ms. Sarah Johnson</p>
+              <h3 className="text-lg font-semibold text-slate-700">{userData?.kidsName || 'Child'}</h3>
+              <p className="text-slate-500">Little Harvard Student • Class {userData?.classCode || 'N/A'}</p>
+              <p className="text-slate-500 text-sm">Teacher: {teacherInfo?.teacherName || 'Ms. Little Harvard'}</p>
             </div>
           </div>
           
@@ -116,7 +137,7 @@ const Profile: React.FC = () => {
               <div className="w-12 h-12 bg-peach-400 rounded-full flex items-center justify-center mb-3 shadow-md">
                 <Baby size={20} className="text-white" />
               </div>
-              <span className="text-sm font-medium text-slate-700">Emma's Progress</span>
+              <span className="text-sm font-medium text-slate-700">{userData?.kidsName || 'Child'}'s Progress</span>
             </button>
             
             <button 
@@ -138,6 +159,16 @@ const Profile: React.FC = () => {
               </div>
               <span className="text-sm font-medium text-slate-700">Privacy</span>
             </button>
+            
+            <button 
+              onClick={() => setShowSettingsOverlay(true)}
+              className="flex flex-col items-center p-4 bg-coral-50 rounded-2xl hover:shadow-md transition-all duration-200"
+            >
+              <div className="w-12 h-12 bg-coral-400 rounded-full flex items-center justify-center mb-3 shadow-md">
+                <Settings size={20} className="text-white" />
+              </div>
+              <span className="text-sm font-medium text-slate-700">Settings</span>
+            </button>
           </div>
         </div>
 
@@ -150,7 +181,7 @@ const Profile: React.FC = () => {
                 <Mail size={18} className="text-coral-600" />
               </div>
               <div>
-                <p className="font-medium text-slate-700">sarah.johnson@email.com</p>
+                <p className="font-medium text-slate-700">{user?.email || 'No email'}</p>
                 <p className="text-sm text-slate-500">Primary Email</p>
               </div>
             </div>
@@ -159,80 +190,85 @@ const Profile: React.FC = () => {
                 <Phone size={18} className="text-mint-600" />
               </div>
               <div>
-                <p className="font-medium text-slate-700">(555) 987-6543</p>
+                <p className="font-medium text-slate-700">Contact your teacher</p>
                 <p className="text-sm text-slate-500">Primary Phone</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-lavender-100 rounded-full flex items-center justify-center">
-                <Phone size={18} className="text-lavender-600" />
-              </div>
-              <div>
-                <p className="font-medium text-slate-700">(555) 123-4567</p>
-                <p className="text-sm text-slate-500">Mike's Phone</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Settings Menu */}
-        <div className="bg-white rounded-3xl shadow-xl p-6 border border-lavender-100">
-          <h2 className="text-xl font-bold text-slate-700 mb-4">Settings</h2>
-          <div className="space-y-2">
-            <button 
-              onClick={handleNotifications}
-              className="w-full flex items-center space-x-3 p-4 hover:bg-lavender-50 rounded-2xl transition-colors duration-200"
-            >
-              <div className="w-10 h-10 bg-coral-100 rounded-full flex items-center justify-center">
-                <Bell size={18} className="text-coral-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-slate-700">Notifications</p>
-                <p className="text-sm text-slate-500">Manage notification preferences</p>
-              </div>
-            </button>
+      </div>
+      
+      {/* Settings Overlay */}
+      {showSettingsOverlay && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl shadow-xl p-6 w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-700">Settings</h2>
+              <button 
+                onClick={() => setShowSettingsOverlay(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={24} className="text-gray-600" />
+              </button>
+            </div>
             
-            <button 
-              onClick={handleAccountSettings}
-              className="w-full flex items-center space-x-3 p-4 hover:bg-lavender-50 rounded-2xl transition-colors duration-200"
-            >
-              <div className="w-10 h-10 bg-lavender-100 rounded-full flex items-center justify-center">
-                <User size={18} className="text-lavender-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-slate-700">Account Settings</p>
-                <p className="text-sm text-slate-500">Update your profile information</p>
-              </div>
-            </button>
-            
-            <button 
-              onClick={handleHelp}
-              className="w-full flex items-center space-x-3 p-4 hover:bg-lavender-50 rounded-2xl transition-colors duration-200"
-            >
-              <div className="w-10 h-10 bg-mint-100 rounded-full flex items-center justify-center">
-                <HelpCircle size={18} className="text-mint-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-slate-700">Help & Support</p>
-                <p className="text-sm text-slate-500">Get help and contact support</p>
-              </div>
-            </button>
-            
-            <button 
-              onClick={handleSignOut}
-              className="w-full flex items-center space-x-3 p-4 hover:bg-red-50 rounded-2xl transition-colors duration-200"
-            >
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <LogOut size={18} className="text-red-500" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-slate-700">Sign Out</p>
-                <p className="text-sm text-slate-500">Sign out of your account</p>
-              </div>
-            </button>
+            <div className="space-y-2">
+              <button 
+                onClick={handleNotifications}
+                className="w-full flex items-center space-x-3 p-4 hover:bg-lavender-50 rounded-2xl transition-colors duration-200"
+              >
+                <div className="w-10 h-10 bg-coral-100 rounded-full flex items-center justify-center">
+                  <Bell size={18} className="text-coral-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-slate-700">Notifications</p>
+                  <p className="text-sm text-slate-500">Manage notification preferences</p>
+                </div>
+              </button>
+              
+              <button 
+                onClick={handleAccountSettings}
+                className="w-full flex items-center space-x-3 p-4 hover:bg-lavender-50 rounded-2xl transition-colors duration-200"
+              >
+                <div className="w-10 h-10 bg-lavender-100 rounded-full flex items-center justify-center">
+                  <User size={18} className="text-lavender-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-slate-700">Account Settings</p>
+                  <p className="text-sm text-slate-500">Update your profile information</p>
+                </div>
+              </button>
+              
+              <button 
+                onClick={handleHelp}
+                className="w-full flex items-center space-x-3 p-4 hover:bg-lavender-50 rounded-2xl transition-colors duration-200"
+              >
+                <div className="w-10 h-10 bg-mint-100 rounded-full flex items-center justify-center">
+                  <HelpCircle size={18} className="text-mint-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-slate-700">Help & Support</p>
+                  <p className="text-sm text-slate-500">Get help and contact support</p>
+                </div>
+              </button>
+              
+              <button 
+                onClick={handleSignOut}
+                className="w-full flex items-center space-x-3 p-4 hover:bg-red-50 rounded-2xl transition-colors duration-200"
+              >
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <LogOut size={18} className="text-red-500" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-slate-700">Sign Out</p>
+                  <p className="text-sm text-slate-500">Sign out of your account</p>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

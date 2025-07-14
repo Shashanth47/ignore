@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Search, Send, User, FileText, Bell, MessageSquare, Award, MessageCircle, Heart, Reply, Trash2, MoreHorizontal } from 'lucide-react';
 import Feed from './Feed';
 import { socketService } from '../../services/socket';
+import { useAuth } from '../../contexts/AuthContext';
+import { getParentsForTeacher } from '../../firebase/classService';
+import { Parent } from '../../types';
 
 interface MessagesProps {
   onClose: () => void;
@@ -11,39 +14,31 @@ interface MessagesProps {
 }
 
 const Messages: React.FC<MessagesProps> = ({ onClose, onCreatePost, showDM, onCloseDM }) => {
+  const { user } = useAuth();
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [messageType, setMessageType] = useState<'general' | 'report' | 'reminder' | 'achievement'>('general');
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      content: "Emma showed wonderful curiosity during our volcano experiment today! 🌋",
-      type: 'achievement',
-      sender: 'teacher',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      reactions: [],
-      replies: []
-    },
-    {
-      id: '2',
-      content: "Thank you for sharing! Emma loved telling us about it at dinner.",
-      type: 'general',
-      sender: 'parent',
-      timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000),
-      reactions: [],
-      replies: []
-    },
-    {
-      id: '3',
-      content: "Emma had a great day! She participated well in circle time and enjoyed the art activity.",
-      type: 'report',
-      sender: 'teacher',
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      reactions: [],
-      replies: []
-    }
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [parents, setParents] = useState<Parent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchParents = async () => {
+      if (!user?.uid) return;
+      
+      try {
+        const parentsData = await getParentsForTeacher(user.uid);
+        setParents(parentsData);
+      } catch (error) {
+        console.error('Error fetching parents:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchParents();
+  }, [user?.uid]);
 
   useEffect(() => {
     // Listen for real-time messages
@@ -77,44 +72,6 @@ const Messages: React.FC<MessagesProps> = ({ onClose, onCreatePost, showDM, onCl
     };
   }, []);
 
-  const students = [
-    { 
-      id: '1', 
-      name: 'Emma Johnson', 
-      avatar: '👤', 
-      parents: ['Sarah Johnson', 'Mike Johnson'],
-      lastMessage: 'Thank you for the volcano photos!', 
-      time: '2h ago', 
-      unread: true 
-    },
-    { 
-      id: '2', 
-      name: 'Noah Davis', 
-      avatar: '👤', 
-      parents: ['Lisa Davis', 'Tom Davis'],
-      lastMessage: 'Will there be a conference next week?', 
-      time: '5h ago', 
-      unread: false 
-    },
-    { 
-      id: '3', 
-      name: 'Sophia Brown', 
-      avatar: '👤', 
-      parents: ['Anna Brown', 'James Brown'],
-      lastMessage: 'She loved the art project!', 
-      time: '1d ago', 
-      unread: false 
-    },
-    { 
-      id: '4', 
-      name: 'Liam Wilson', 
-      avatar: '👤', 
-      parents: ['Emily Wilson', 'David Wilson'],
-      lastMessage: 'Thanks for the update!', 
-      time: '2d ago', 
-      unread: false 
-    },
-  ];
 
   const messageTypes = [
     { id: 'general', label: 'General', icon: MessageSquare, color: 'from-blue-500 to-purple-500' },
@@ -123,7 +80,7 @@ const Messages: React.FC<MessagesProps> = ({ onClose, onCreatePost, showDM, onCl
     { id: 'achievement', label: 'Achievement', icon: Award, color: 'from-yellow-500 to-orange-500' },
   ];
 
-  const selectedStudentData = students.find(s => s.id === selectedStudent);
+  const selectedParentData = parents.find(p => p.id === selectedStudent);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -258,43 +215,58 @@ const Messages: React.FC<MessagesProps> = ({ onClose, onCreatePost, showDM, onCl
                 <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search students..."
+                  placeholder="Search parents..."
                   className="w-full pl-10 pr-4 py-3 bg-white border border-lavender-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-coral-400 focus:border-transparent shadow-sm"
                 />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {students.map((student) => (
-                  <button
-                    key={student.id}
-                    onClick={() => setSelectedStudent(student.id)}
-                    className="bg-white p-6 rounded-3xl shadow-sm border border-lavender-100 hover:shadow-lg transition-all duration-200 text-left"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 bg-peach-400 rounded-full flex items-center justify-center text-2xl shadow-md">
-                        <span className="text-white">👤</span>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold text-gray-800">{student.name}</h3>
-                          {student.unread && (
-                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                          )}
+              {loading ? (
+                <div className="animate-pulse space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="bg-white p-6 rounded-3xl shadow-sm h-24"></div>
+                    ))}
+                  </div>
+                </div>
+              ) : parents.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-3xl shadow-sm">
+                  <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-500 mb-2">No parents enrolled yet</h3>
+                  <p className="text-gray-400">
+                    Share your class code with parents to start messaging!
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {parents.map((parent) => (
+                    <button
+                      key={parent.id}
+                      onClick={() => setSelectedStudent(parent.id)}
+                      className="bg-white p-6 rounded-3xl shadow-sm border border-lavender-100 hover:shadow-lg transition-all duration-200 text-left"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-peach-400 rounded-full flex items-center justify-center text-2xl shadow-md">
+                          <span className="text-white">👤</span>
                         </div>
-                        <p className="text-sm text-gray-500 mb-2">
-                          Parents: {student.parents.join(', ')}
-                        </p>
-                        <p className="text-sm text-gray-600 truncate">
-                          {student.lastMessage}
-                        </p>
-                        <span className="text-xs text-gray-400 mt-1 block">
-                          {student.time}
-                        </span>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <h3 className="font-semibold text-gray-800">{parent.name}</h3>
+                          </div>
+                          <p className="text-sm text-gray-500 mb-2">
+                            Child: {parent.kidsName}
+                          </p>
+                          <p className="text-sm text-gray-600 truncate">
+                            {parent.email}
+                          </p>
+                          <span className="text-xs text-gray-400 mt-1 block">
+                            {parent.enrolledAt ? new Date(parent.enrolledAt).toLocaleDateString() : 'Recently enrolled'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -304,13 +276,13 @@ const Messages: React.FC<MessagesProps> = ({ onClose, onCreatePost, showDM, onCl
             <div className="bg-gradient-to-r from-coral-400 to-peach-400 p-6 text-white">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold">
-                  {selectedStudentData?.name}'s Parents
+                  Chat with {selectedParentData?.name}
                 </h2>
                 <button 
                   onClick={() => setSelectedStudent(null)}
                   className="text-white/80 hover:text-white font-medium bg-white/20 px-4 py-2 rounded-full transition-all duration-200"
                 >
-                  ← Back to students
+                  ← Back to parents
                 </button>
               </div>
               
@@ -321,9 +293,12 @@ const Messages: React.FC<MessagesProps> = ({ onClose, onCreatePost, showDM, onCl
                     <span className="text-white">👤</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white text-lg">{selectedStudentData?.name}</h3>
+                    <h3 className="font-semibold text-white text-lg">{selectedParentData?.kidsName}</h3>
                     <p className="text-white/80 text-sm">
-                      Parents: {selectedStudentData?.parents.join(', ')}
+                      Parent: {selectedParentData?.name}
+                    </p>
+                    <p className="text-white/80 text-xs">
+                      {selectedParentData?.email}
                     </p>
                   </div>
                 </div>

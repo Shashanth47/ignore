@@ -4,16 +4,17 @@ import { MessageCircle } from 'lucide-react';
 interface HeaderProps {
   activeTab: string;
   onOpenDM?: () => void;
+  userData?: any;
 }
 
-const Header: React.FC<HeaderProps> = ({ activeTab, onOpenDM }) => {
+const Header: React.FC<HeaderProps> = ({ activeTab, onOpenDM, userData }) => {
   if (activeTab === 'chat') {
     return (
-      <header className="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-lavender-200 shadow-sm">
+      <header className="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-teal-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-coral-500">
+              <h1 className="text-2xl font-bold text-teal-700">
                 Class Updates
               </h1>
             </div>
@@ -33,13 +34,21 @@ const Header: React.FC<HeaderProps> = ({ activeTab, onOpenDM }) => {
   }
 
   return (
-    <header className="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-lavender-200 shadow-sm">
+    <header className="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-teal-200 shadow-sm">
       <div className="max-w-4xl mx-auto px-6 py-4">
         <div className="flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-coral-500">
-              Rainbow Preschool
-            </h1>
+          <div className="text-center flex items-center gap-4">
+            <div className="w-12 h-12 bg-peach-100 rounded-full flex items-center justify-center">
+              <img src="/little_harvard.png" alt="Little Harvard Logo" className="w-10 h-10 rounded-full" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-teal-700">
+                Little Harvard
+              </h1>
+              <p className="text-sm text-teal-600 font-medium">
+                {userData?.parentName ? `Welcome, ${userData.parentName}` : 'Early Education'}
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t-2 border-lavender-200 shadow-xl z-30">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t-2 border-teal-200 shadow-xl z-30">
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex justify-around py-3">
           {tabs.map((tab) => {
@@ -28,7 +28,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
                 className={`flex flex-col items-center py-2 px-6 rounded-xl transition-all duration-200 ${
                   isActive 
                     ? tab.color + ' text-white transform scale-105' 
-                    : 'text-slate-600 hover:text-slate-800 hover:bg-lavender-50'
+                    : 'text-slate-600 hover:text-slate-800 hover:bg-teal-50'
                 }`}
               >
                 <Icon size={22} />
