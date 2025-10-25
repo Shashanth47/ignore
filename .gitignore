@@ -1,25 +1,81 @@
-# Logs
-logs
+# Node artifacts
+node_modules/
+.npm/
+dist/
+build/
+.vite/
+.next/
+.svelte-kit/
+coverage/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+.pnpm-debug.log*
 .DS_Store
+
+# Package managers
+.pnp.*
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/versions
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+develop-eggs/
+dist/
+.wheel/
+share/python-wheels/
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+.pyre/
+.dmypy.json
+.tox/
+.coverage
+*.cover
+coverage.xml
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.python-version
+.poetry/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE / Editors
+.idea/
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.env
+
+# Data & cache
+*.sqlite3
+*.db
+*.pid
+logs/
+/tmp/
+
+# Capacitor / Expo / React Native artifacts
+*.xcworkspace
+Pods/
+android/
+ios/
+.expo/
